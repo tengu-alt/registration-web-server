@@ -1,11 +1,19 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+type User struct {
+	FirstName string
+	LastName  string
+	Email     string
+	Password  string
+}
 
 func login(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
@@ -14,26 +22,32 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	data := []byte(b)
 
-	fmt.Printf("%s", string(b))
+	u := &User{}
+	json.Unmarshal(data, u)
+	resp, _ := json.Marshal(u)
+	w.Write(resp)
+	fmt.Printf("%s", b)
 
-	http.ServeFile(w, r, "./index.html")
 }
 func hello(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "404 not found.", http.StatusNotFound)
 		return
 	}
+	http.ServeFile(w, r, "./index.html")
 }
 
 func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/login", login)
+	//http.Handle("/submit.html", http.FileServer(http.Dir("./")))
 	http.Handle("/index.js", http.FileServer(http.Dir("./")))
 	http.Handle("/eNWDJx.jpg", http.FileServer(http.Dir("./")))
 	http.Handle("/style.css", http.FileServer(http.Dir("./")))
 	fmt.Printf("Starting server for testing HTTP POST...\n")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8081", nil); err != nil {
 		log.Fatal(err)
 	}
 }
