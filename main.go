@@ -3,11 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"functions"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
+	"pkg/pkg"
 )
 
 type User struct {
@@ -23,49 +22,27 @@ type ValidationErr struct {
 
 func (u *User) Validate() []ValidationErr {
 	errors := make([]ValidationErr, 0, 0)
-	if len(u.FirstName) < 2 {
+	if pkg.NameVald(u.FirstName, 2, 64) != true {
 		errors = append(errors, ValidationErr{
 			FieldValue: "FirstName",
-			ErrMassage: fmt.Sprintf("field %s length should be equal or longer than 2", "FirstName"),
+			ErrMassage: fmt.Sprintf("field %s length should be equal or longer than 2 and less than 64", "FirstName"),
 		})
 	}
-	if len(u.FirstName) > 64 {
+	if pkg.NameVald(u.LastName, 2, 64) != true {
 		errors = append(errors, ValidationErr{
-			FieldValue: "FirstName",
-			ErrMassage: fmt.Sprintf("field %s length should be less than 64", "FirstName"),
+			FieldValue: "LastName",
+			ErrMassage: fmt.Sprintf("field %s length should be equal or longer than 2 and less than 64", "Lastname"),
 		})
 	}
 
-	if len(u.LastName) < 2 {
-		errors = append(errors, ValidationErr{
-			FieldValue: "LastName",
-			ErrMassage: fmt.Sprintf("field %s length should be equal or longer than 2", "LastName"),
-		})
-	}
-
-	if len(u.LastName) > 64 {
-		errors = append(errors, ValidationErr{
-			FieldValue: "LastName",
-			ErrMassage: fmt.Sprintf("field %s length should be less than 64", "LastName"),
-		})
-	}
-	if len(u.Password) < 8 {
+	if pkg.PasswordValid(u.Password, 8) != true {
 		errors = append(errors, ValidationErr{
 			FieldValue: "Password",
 			ErrMassage: fmt.Sprintf("field %s length should be equal or longer than 8", "Password"),
 		})
 	}
 
-	if len(u.Password) > 64 {
-		errors = append(errors, ValidationErr{
-			FieldValue: "Password",
-			ErrMassage: fmt.Sprintf("field %s length should be less than 64", "Password"),
-		})
-	}
-
-	var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if emailRegex.MatchString(u.Email) != true {
-
+	if pkg.ValidEmail(u.Email) != true {
 		errors = append(errors, ValidationErr{
 			FieldValue: "Email",
 			ErrMassage: "email failed verification",
@@ -100,7 +77,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("[{}]"))
-	fmt.Printf(functions.ValiderEmail())
+	//pkg.Printer("im working")
 	//resp, _ := json.Marshal(u)
 	//w.Write()
 	//fmt.Printf("%s", b)
